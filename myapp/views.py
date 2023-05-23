@@ -3,7 +3,9 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm
-from .models import Code
+from .models import Code, Customer
+from django.http import JsonResponse
+from myapp.serializers import CustomerSerializer
 import openai
 
 
@@ -149,3 +151,9 @@ def delete_past(request, Past_id):
     past.delete()
     messages.success(request, "Deleted Successfully...")
     return redirect('past')
+
+def customers(request):
+    """invoke serializer and return to client"""
+    data = Customer.objects.all()
+    serializer = CustomerSerializer(data, many=True)
+    return JsonResponse({'customers': serializer.data})
