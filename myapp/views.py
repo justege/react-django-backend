@@ -4,10 +4,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm
 from .models import Code, Customer
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from myapp.serializers import CustomerSerializer
 import openai
-
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
 def home(request):
     lang_list = ['c', 'clike', 'cpp', 'csharp', 'css', 'dart', 'django', 'go', 'html', 'java', 'javascript', 'markup',
@@ -97,6 +99,7 @@ def suggest(request):
     return render(request, 'suggest.html', {'lang_list': lang_list})
 
 
+
 def login_user(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -152,8 +155,36 @@ def delete_past(request, Past_id):
     messages.success(request, "Deleted Successfully...")
     return redirect('past')
 
+@api_view(['GET', 'POST'])
 def customers(request):
     """invoke serializer and return to client"""
-    data = Customer.objects.all()
-    serializer = CustomerSerializer(data, many=True)
-    return JsonResponse({'customers': serializer.data})
+    if request.method == 'GET':
+        data = Customer.objects.all()
+        serializer = CustomerSerializer(data, many=True)
+        return Response({'customer': serializer.data})
+    elif request.method == 'POST':
+        serializer = CustomerSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'customer': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'POST', 'DELETE'])
+def customer(request,id):
+    try:
+        data = Customer.objects.get(pk=id)
+    except Customer.DoesNotExist:
+        return Response(status = status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = CustomerSerializer(data)
+        return Response({'customer': serializer.data})
+    elif request.method == 'DELETE':
+        data.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    elif request.method == 'POST':
+        serializer = CustomerSerializer(data, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'customer': serializer.data})
+        return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)
