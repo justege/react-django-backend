@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from myapp.models import Code, Customer, Client, Popup, ChatGPT
+from myapp.models import *
 
 class CodeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,6 +28,14 @@ class PopupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Popup
         fields = '__all__'
+
+
+class PopupEngagementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PopupEngagement
+        fields = '__all__'
+
+
 
 class ChatGPTSerializer(serializers.ModelSerializer):
     class Meta:

@@ -12,6 +12,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
+import random
+import string
 from django.core.exceptions import ObjectDoesNotExist
 
 def home(request):
@@ -191,6 +193,22 @@ def customer(request,id):
             serializer.save()
             return Response({'customer': serializer.data})
         return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def newPopupEngagementCreation(request, clientId):
+    try:
+        client = Client.objects.get(clientId=clientId)
+        popup = Popup.objects.get(popupId=client)
+        # Generate a random unique identifier
+        popupEngagementUniqueIdentifier = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
+        serializer = PopupEngagementSerializer(data={'popupEngagementId': popup.id, 'popupEngagementUniqueIdentifier': popupEngagementUniqueIdentifier})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'customer': serializer.data})
+    except Client.DoesNotExist:
+        return Response({'error': 'Client does not exist'}, status=404)
+
 
 
 class ChatGPTByClientView(APIView):
