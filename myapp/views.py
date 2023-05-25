@@ -4,12 +4,15 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm
 from .models import Code, Customer
+from myapp.models import Client, Popup, ChatGPT, PopupEngagement
 from django.http import JsonResponse, Http404
-from myapp.serializers import CustomerSerializer
+from myapp.serializers import *
 import openai
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
+from django.core.exceptions import ObjectDoesNotExist
 
 def home(request):
     lang_list = ['c', 'clike', 'cpp', 'csharp', 'css', 'dart', 'django', 'go', 'html', 'java', 'javascript', 'markup',
@@ -188,3 +191,25 @@ def customer(request,id):
             serializer.save()
             return Response({'customer': serializer.data})
         return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChatGPTByClientView(APIView):
+    def get(self, request, client_id, popupEngagementUniqueIdentifier):
+        try:
+            client = Client.objects.get(pk=client_id)
+            popup = Popup.objects.get(popupId=client)
+            popupEngagement = PopupEngagement.objects.filter(popupEngagementId=popup,
+                                                             popupEngagementUniqueIdentifier=popupEngagementUniqueIdentifier).first()
+
+            if popupEngagement:
+                chatgpts = ChatGPT.objects.filter(requestId=popupEngagement)
+                serializer = ChatGPTSerializer(chatgpts, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'Popup engagement does not exist'}, status=404)
+
+        except Client.DoesNotExist:
+            return Response({'error': 'Client does not exist'}, status=404)
+
+
+
