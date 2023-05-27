@@ -210,6 +210,19 @@ def newPopupEngagementCreation(request, clientId):
         return Response({'error': 'Client does not exist'}, status=404)
 
 
+@api_view(['GET', 'POST'])
+def popup(request, popupId):
+    """invoke serializer and return to client"""
+    if request.method == 'GET':
+        popup = Popup.objects.get(popupId=popupId)
+        serializer = PopupSerializer(popup)
+        return Response({'popup': serializer.data})
+    elif request.method == 'POST':
+        serializer = PopupSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'popup': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ChatGPTByClientView(APIView):
     def get(self, request, client_id, popupEngagementUniqueIdentifier):
@@ -218,16 +231,38 @@ class ChatGPTByClientView(APIView):
             popup = Popup.objects.get(popupId=client)
             popupEngagement = PopupEngagement.objects.filter(popupEngagementId=popup,
                                                              popupEngagementUniqueIdentifier=popupEngagementUniqueIdentifier).first()
-
             if popupEngagement:
                 chatgpts = ChatGPT.objects.filter(requestId=popupEngagement)
                 serializer = ChatGPTSerializer(chatgpts, many=True)
-                return Response(serializer.data)
+                return Response({'chatgpt': serializer.data})
             else:
                 return Response({'error': 'Popup engagement does not exist'}, status=404)
 
         except Client.DoesNotExist:
             return Response({'error': 'Client does not exist'}, status=404)
 
+    def post(self, request, client_id, popupEngagementUniqueIdentifier):
+        try:
+            client = Client.objects.get(pk=client_id)
+            popup = Popup.objects.get(popupId=client)
+            popupEngagement = PopupEngagement.objects.filter(popupEngagementId=popup,
+                                                             popupEngagementUniqueIdentifier=popupEngagementUniqueIdentifier).first()
+
+            if popupEngagement:
+                serializer = ChatGPTSerializer(data={
+                    'requestId': popupEngagement.id,  # Use the primary key of the popupEngagement object
+                    'inputChatGPT': request.data['inputChatGPT'],  # Assign the value of 'inputChatGPT' field
+                })
+
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response({'popup': serializer.data})
+                else:
+                    return Response(serializer.errors, status=400)  # Return errors if serializer is not valid
+            else:
+                return Response({'error': 'Popup engagement does not exist'}, status=404)
+
+        except Client.DoesNotExist:
+            return Response({'error': 'Client does not exist'}, status=404)
 
 

@@ -11,5 +11,6 @@ urlpatterns = [
 	path('api/customers/', views.customers, name='customers'),
 	path('api/customer/<int:id>', views.customer, name='customer'),
 	path('popup/createNewPopupEngagement/<int:clientId>', views.newPopupEngagementCreation, name='newPopupEngagementCreation'),
-	path('clients/<int:client_id>/<str:popupEngagementUniqueIdentifier>/chatgpt/', views.ChatGPTByClientView.as_view(), name='chatgpt-by-client'),
+	path('popup/<int:popupId>', views.popup, name='popup'),
+	path('popup/chatgpt/<int:client_id>/<str:popupEngagementUniqueIdentifier>', views.ChatGPTByClientView.as_view(), name='chatgpt-by-client'),
 ]
