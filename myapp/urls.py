@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
-
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
 	path('login/', views.login_user, name='login'),
@@ -14,3 +15,5 @@ urlpatterns = [
 	path('popup/<int:popupId>', views.popup, name='popup'),
 	path('popup/chatgpt/<int:client_id>/<str:popupEngagementUniqueIdentifier>', views.ChatGPTByClientView.as_view(), name='chatgpt-by-client'),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

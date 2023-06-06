@@ -41,3 +41,9 @@ class ChatGPTSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatGPT
         fields = '__all__'
+
+
+class AdditionalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PopupAdditional
+        fields = '__all__'

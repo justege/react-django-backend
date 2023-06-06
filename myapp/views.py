@@ -231,10 +231,12 @@ class ChatGPTByClientView(APIView):
             popup = Popup.objects.get(popupId=client)
             popupEngagement = PopupEngagement.objects.filter(popupEngagementId=popup,
                                                              popupEngagementUniqueIdentifier=popupEngagementUniqueIdentifier).first()
-            if popupEngagement:
+            popupAdditional = PopupAdditional.objects.filter(popupAdditionalId=popup)
+            Additionalserializer = AdditionalSerializer(popupAdditional, many=True)
+            if popupEngagement and popupAdditional:
                 chatgpts = ChatGPT.objects.filter(requestId=popupEngagement)
-                serializer = ChatGPTSerializer(chatgpts, many=True)
-                return Response({'chatgpt': serializer.data})
+                ChatGPTserializer = ChatGPTSerializer(chatgpts, many=True)
+                return Response({'chatgpt': ChatGPTserializer.data, 'popupAdditional': Additionalserializer.data})
             else:
                 return Response({'error': 'Popup engagement does not exist'}, status=404)
 
@@ -246,12 +248,37 @@ class ChatGPTByClientView(APIView):
             client = Client.objects.get(pk=client_id)
             popup = Popup.objects.get(popupId=client)
             popupEngagement = PopupEngagement.objects.filter(popupEngagementId=popup,
+
+
                                                              popupEngagementUniqueIdentifier=popupEngagementUniqueIdentifier).first()
 
             if popupEngagement:
+                """
+                openai.api_key = "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"
+                # Create OpenAI Instance
+                openai.Model.list()
+                # Make an OpenAI Request
+
+                response = openai.Completion.create(
+                    engine='text-davinci-003',
+                    prompt=f"{request.data['inputChatGPT']}",
+                    temperature=0,
+                    max_tokens=10,
+                    top_p=1.0,
+                    frequency_penalty=0.0,
+                    presence_penalty=0.0,
+                )
+                # Parse the response
+                response = (response["choices"][0]["text"]).strip()
+                """
+
+
+
+
                 serializer = ChatGPTSerializer(data={
                     'requestId': popupEngagement.id,  # Use the primary key of the popupEngagement object
                     'inputChatGPT': request.data['inputChatGPT'],  # Assign the value of 'inputChatGPT' field
+                    'outputChatGPT': 'hellooo',  # Assign the value of 'inputChatGPT' field
                 })
 
                 if serializer.is_valid():
