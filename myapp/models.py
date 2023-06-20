@@ -3,18 +3,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 
-class Code(models.Model):
-	user = models.ForeignKey(User, related_name="code", on_delete=models.DO_NOTHING)
-	question = models.TextField(max_length=3000)
-	code_answer = models.TextField(max_length=3000)
-	language = models.CharField(max_length=50)
-	def __str__(self):
-		return self.question
-
-class Customer(models.Model):
-	name = models.CharField(max_length=200)
-	industry = models.CharField(max_length=200)
-
 class Client(models.Model):
 	clientId = models.ForeignKey(User, related_name='client', on_delete=models.CASCADE)
 	subscription = models.SmallIntegerField()
@@ -102,6 +90,12 @@ class Popup(models.Model):
 	popupCloseButtonVariant = models.CharField(max_length=10,null=True)
 	popupCloseButtonColorScheme = models.CharField(max_length=10,null=True)
 
+	popupSendButtonColor = models.CharField(max_length=10, null=True)
+	popupSendButtonTextColor = models.CharField(max_length=10, null=True)
+	popupSendButtonText = models.CharField(max_length=10, null=True)
+	popupSendButtonVariant = models.CharField(max_length=10,null=True)
+	popupSendButtonScheme = models.CharField(max_length=10,null=True)
+
 	popupCTAButtonText = models.CharField(max_length=200, null=True)
 	popupCTAButtonPositioning = models.SmallIntegerField(null=True)
 	popupCTAButtonTextColor = models.CharField(max_length=200, null=True)
@@ -110,11 +104,17 @@ class Popup(models.Model):
 	popupCTAButtonLink = models.CharField(max_length=50, null=True)
 	popupCTAButtonBorderColor = models.CharField(max_length=20, null=True)
 	popupCTAButtonHasBorder = models.BooleanField(null=True)
-	popupTitleAndContentPercentage = models.SmallIntegerField(null=True)
-	popupChatHistoryPercentage = models.SmallIntegerField(null=True)
-	popupChatSendPercentage = models.SmallIntegerField(null=True)
-	popupCTAPercentage = models.SmallIntegerField(null=True)
+
+
+	popupTitleAndContentPercentage = models.CharField(max_length=10, null=True)
+	popupChatHistoryPercentage = models.CharField(max_length=10, null=True)
+	popupChatSendPercentage = models.CharField(max_length=10, null=True)
+	popupCTAPercentage = models.CharField(max_length=10, null=True)
 	#popupImage =  models.ImageField(upload_to ='uploads/', null=True)
+
+	popupExampleInputChatGPT = models.CharField(max_length=200, null=True)
+	popupExampleOutputChatGPT = models.CharField(max_length=200, null=True)
+
 
 class PopupAdditional(models.Model):
 	popupAdditionalId = models.ForeignKey(Popup, related_name='popupAdditional', on_delete=models.CASCADE)
@@ -132,6 +132,7 @@ class ChatGPT(models.Model):
 	requestId = models.ForeignKey(PopupEngagement, related_name='chatgpt', on_delete=models.CASCADE)
 	inputChatGPT = models.TextField(max_length=2000)
 	outputChatGPT = models.TextField(max_length=5000, null=True)
+	chatWebsiteURL = models.CharField(max_length=300, null=True)
 
 class PopupChatSuggestion(models.Model):
 	popupChatSuggestion = models.ForeignKey(Popup, related_name='popupChatSuggestion', on_delete=models.CASCADE)
