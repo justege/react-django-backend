@@ -15,6 +15,20 @@ import random
 import string
 from django.core.exceptions import ObjectDoesNotExist
 
+
+def PopupFilesView(request):
+    # Retrieve all PopupFiles instances
+    popup_files = PopupFiles.objects.all()
+
+    # Retrieve PopupFiles instances uploaded by the current user
+    user = request.user
+    popup_files = PopupFiles.objects.filter(uploaded_by=user)
+
+
+    # Rest of your code...
+
+    return Response({'popup_files': popup_files[0]})
+
 def login_user(request):
     if request.method == 'POST':
         username = request.POST['username']
