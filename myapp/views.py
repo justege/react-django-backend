@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm
 from myapp.models import Client, Popup, ChatGPT, PopupEngagement
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404, HttpResponse
 from myapp.serializers import *
 import openai
 from rest_framework.decorators import api_view
@@ -17,17 +17,19 @@ from django.core.exceptions import ObjectDoesNotExist
 
 
 def PopupFilesView(request):
-    # Retrieve all PopupFiles instances
-    popup_files = PopupFiles.objects.all()
-
-    # Retrieve PopupFiles instances uploaded by the current user
+    # Retrieve the latest PopupFiles instance uploaded by the current user
     user = request.user
-    popup_files = PopupFiles.objects.filter(uploaded_by=user)
+    popup_file = PopupFiles.objects.filter(uploaded_by=user).order_by('-uploaded_at').first()
 
+    if popup_file:
+        file_content = popup_file.file_content
+        # You might need to adjust the attribute name (e.g., 'file_content') based on your model field name
 
-    # Rest of your code...
+        # Rest of your code...
 
-    return Response({'popup_files': popup_files[0]})
+        return HttpResponse(file_content)
+    else:
+        return HttpResponse("No file uploaded")
 
 def login_user(request):
     if request.method == 'POST':
