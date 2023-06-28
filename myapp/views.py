@@ -16,14 +16,14 @@ import string
 from django.core.exceptions import ObjectDoesNotExist
 
 
+
 def PopupFilesView(request):
     # Retrieve the latest PopupFiles instance uploaded by the current user
     user = request.user
     popup_file = PopupFiles.objects.filter(uploaded_by=user).order_by('-uploaded_at').first()
 
     if popup_file:
-        file_content = popup_file.file_content
-        # You might need to adjust the attribute name (e.g., 'file_content') based on your model field name
+        file_content = popup_file.file.read()  # Read the content of the file
 
         # Rest of your code...
 
