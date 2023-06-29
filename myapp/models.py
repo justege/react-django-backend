@@ -3,14 +3,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 
-class PopupFiles(models.Model):
-	uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
-	file = models.FileField(upload_to='popups/%Y/%m/%d/')
-	uploaded_at = models.DateTimeField(default=now)
-
-	def __str__(self):
-		return self.file.name
-
 
 class Client(models.Model):
 	clientId = models.ForeignKey(User, related_name='client', on_delete=models.CASCADE)
@@ -147,5 +139,11 @@ class PopupChatSuggestion(models.Model):
 	popupChatSuggestion = models.ForeignKey(Popup, related_name='popupChatSuggestion', on_delete=models.CASCADE)
 	popupSuggestion = models.TextField(max_length=50, null=True)
 
+class PopupFiles(models.Model):
+	uploaded_by = models.ForeignKey(Client, on_delete=models.CASCADE)
+	file = models.FileField(upload_to='popups/%Y/%m/%d/')
+	uploaded_at = models.DateTimeField(default=now)
 
+	def __str__(self):
+		return self.file.name
 

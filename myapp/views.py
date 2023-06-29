@@ -17,10 +17,9 @@ from django.core.exceptions import ObjectDoesNotExist
 
 
 
-def PopupFilesView(request):
+def PopupFilesView(request, clientId):
     # Retrieve the latest PopupFiles instance uploaded by the current user
-    user = request.user
-    popup_file = PopupFiles.objects.filter(uploaded_by=user).order_by('-uploaded_at').first()
+    popup_file = PopupFiles.objects.filter(uploaded_by=clientId).order_by('-uploaded_at').first()
 
     if popup_file:
         file_content = popup_file.file.read()  # Read the content of the file
