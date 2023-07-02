@@ -13,13 +13,6 @@ class Client(models.Model):
 	clientHasProducts = models.BooleanField(default=False)
 	clientHasPromotions = models.BooleanField(default=False)
 
-class ClientProducts(models.Model):
-	clientProductId = models.ForeignKey(Client, related_name='clientProducts', on_delete=models.CASCADE)
-	productPrice = models.SmallIntegerField(null=True)
-	productLink = models.CharField(max_length=300, null=True)
-	productDetails = models.TextField(max_length=3000,null=True)
-	productPriceWithPromo = models.CharField(max_length=300, null=True)
-
 class PromoCode(models.Model):
 	client = models.ForeignKey(Client, related_name='promoCodes', on_delete=models.CASCADE)
 	code = models.CharField(max_length=50)
@@ -27,21 +20,27 @@ class PromoCode(models.Model):
 class Popup(models.Model):
 	popupId = models.ForeignKey(Client, related_name='popup', on_delete=models.CASCADE)
 
+	popupHasLogo = models.BooleanField(default=False,null=True)
+	popupLogo = models.ImageField(null=True)
 	popupGoal = models.SmallIntegerField(null=True)
 	popupHeight = models.SmallIntegerField(null=True)
 	popupWidth = models.SmallIntegerField(null=True)
 	popupEmailSubscription = models.BooleanField(null=True)
 	popupPromo = models.BooleanField(null=True)
 
-	popupImage = models.ImageField( null=True)
-	popupImageBorderWidth = models.CharField(max_length=4, null=True)
-	popupImageBorderColor = models.CharField(max_length=4, null=True)
-	popupImageHeight = models.CharField(max_length=4, null=True)
-	popupImageWidth = models.CharField(max_length=4, null=True)
-
 	popupBackgroundColor = models.CharField(max_length=20, null=True)
 	popupBorderColor = models.CharField(max_length=20, null=True)
 	popupBorderWidth = models.CharField(max_length=4, null=True)
+	popupBorderRadius = models.CharField(max_length=5, null=True)
+	popupBorderBoxShadow = models.CharField(max_length=5, null=True)
+
+	popupImage = models.ImageField( null=True)
+	popupImageBorderWidth = models.CharField(max_length=4, null=True)
+	popupImageBorderColor = models.CharField(max_length=8, null=True)
+	popupImageHeight = models.CharField(max_length=4, null=True)
+	popupImageWidth = models.CharField(max_length=4, null=True)
+
+	popupChatHistoryFontSize = models.CharField(max_length=8, null=True)
 
 	popupTitle = models.CharField(max_length=200, null=True)
 	popupTitleHeight = models.SmallIntegerField(null=True)
@@ -51,14 +50,19 @@ class Popup(models.Model):
 	popupTextMarginRight = models.SmallIntegerField(null=True)
 
 	popupTitlePositioning = models.SmallIntegerField(null=True)
-	popupTitleTextColor = models.CharField(max_length=20, null=True)
+	popupTitleTextColor = models.CharField(max_length=8, null=True)
+
+	popupTitleFontSize = models.CharField(max_length=9, null=True)
+	popupTitleFontWeight = models.CharField(max_length=9,null=True)
+	popupContentFontSize = models.CharField(max_length=9, null=True)
+	popupContentFontWeight = models.CharField(max_length=9, null=True)
 
 	popupContent = models.CharField(max_length=200, null=True)
 	popupContentHasBorder = models.BooleanField(null=True)
 	popupContentHeight = models.SmallIntegerField(null=True)
 	popupContentWidth = models.SmallIntegerField(null=True)
 	popupContentPositioning = models.SmallIntegerField(null=True)
-	popupContentTextColor = models.CharField(max_length=20, null=True)
+	popupContentTextColor = models.CharField(max_length=8, null=True)
 	#BoxShadow, BorderRadius
 
 	popupChatHistoryPositioning = models.SmallIntegerField(null=True)
@@ -85,8 +89,8 @@ class Popup(models.Model):
 
 	popupCloseButtonText = models.CharField(max_length=50, null=True)
 	popupCloseButtonPositioning = models.SmallIntegerField(null=True)
-	popupCloseButtonTextColor = models.CharField(max_length=20, null=True)
-	popupCloseButtonBoxColor = models.CharField(max_length=20, null=True)
+	popupCloseButtonTextColor = models.CharField(max_length=8, null=True)
+	popupCloseButtonBoxColor = models.CharField(max_length=8, null=True)
 	popupCloseButtonTextSize = models.CharField(max_length=10,null=True)
 	popupCloseButtonVariant = models.CharField(max_length=10,null=True)
 	popupCloseButtonColorScheme = models.CharField(max_length=10,null=True)
@@ -121,13 +125,13 @@ class PopupAdditional(models.Model):
 	popupAdditionalId = models.ForeignKey(Popup, related_name='popupAdditional', on_delete=models.CASCADE)
 	popupAdditionalText = models.CharField(max_length=200, null=True)
 	popupAdditionalLink = models.CharField(max_length=50, null=True)
-	
+
 class PopupEngagement(models.Model):
 	popupEngagementId = models.ForeignKey(Popup, related_name='popupEngagement', on_delete=models.CASCADE)
 	popupEngagementUniqueIdentifier = models.CharField(max_length=15, null=True)
 	popupEngagementStart = models.DateTimeField(default=now)
 	popupEngagementEnd = models.DateTimeField(null=True)
-	conversationStartedAtWebsiteLink = models.CharField(max_length=50,null=True)
+	conversationStartedAtWebsiteLink = models.CharField(max_length=150,null=True)
 
 class ChatGPT(models.Model):
 	requestId = models.ForeignKey(PopupEngagement, related_name='chatgpt', on_delete=models.CASCADE)
@@ -135,9 +139,32 @@ class ChatGPT(models.Model):
 	outputChatGPT = models.TextField(max_length=5000, null=True)
 	chatWebsiteURL = models.CharField(max_length=300, null=True)
 
+
 class PopupChatSuggestion(models.Model):
 	popupChatSuggestion = models.ForeignKey(Popup, related_name='popupChatSuggestion', on_delete=models.CASCADE)
 	popupSuggestion = models.TextField(max_length=50, null=True)
+
+class GeneralInformationForChatGPT(models.Model):
+	chatGPTInformationKey = models.ForeignKey(Popup, related_name='informationForChatGPT', on_delete=models.CASCADE)
+	whatProblemIsYourCompanySolving = models.TextField(max_length=400, null=True)
+	whatServicesDoYouOffer = models.TextField(max_length=400, null=True)
+	howCanCustomersReachYouOrYourTeam = models.TextField(max_length=400, null=True)
+	whatAreFAQs = models.TextField(max_length=2000, null=True)
+	anyOtherInformation = models.TextField(max_length=2000, null=True)
+	howMuchDiscountCanYouDoMaximum = models.TextField(max_length=2000, null=True)
+	doYouWantYourOwnPopupTitleAndContent = models.BooleanField(default=True)
+	whatIsYourMostSoldProduct = models.TextField(max_length=2000, null=True)
+
+class PopupProducts(models.Model):
+	productSpecificChatGPTInformationKey = models.ForeignKey(Popup, related_name='productSpecificInformationForChatGPT',on_delete=models.CASCADE)
+	productPrice = models.IntegerField(null=True)
+	productCurrency = models.CharField(max_length=3, null=True)
+	productIsDiscountable = models.BooleanField(default=False)
+	productPriceAfterDiscount = models.IntegerField(null=True)
+	productPromoCode = models.CharField(max_length=300, null=True)
+	productLink = models.CharField(max_length=200, null=True)
+	productSpecs = models.TextField(max_length=3000, null=True)
+	productImage = models.ImageField(null=True)
 
 class PopupFiles(models.Model):
 	uploaded_by = models.ForeignKey(Client, on_delete=models.CASCADE)

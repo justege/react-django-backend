@@ -14,7 +14,8 @@ from rest_framework.views import APIView
 import random
 import string
 from django.core.exceptions import ObjectDoesNotExist
-
+# Initialize the OpenAI API client
+openai.api_key = ''
 
 
 def PopupFilesView(request, clientId):
@@ -107,18 +108,19 @@ class ChatGPTByClientView(APIView):
             popup = Popup.objects.get(id=popupId, popupId=client)
             popupEngagement = PopupEngagement.objects.filter(popupEngagementId=popup, popupEngagementUniqueIdentifier=popupEngagementUniqueIdentifier).first()
             popupAdditional = PopupAdditional.objects.filter(popupAdditionalId=popup)
-            Additionalserializer = AdditionalSerializer(popupAdditional, many=True)
+            additionalSerializer = AdditionalSerializer(popupAdditional, many=True)
 
             if popupEngagement and popupAdditional:
                 chatgpts = ChatGPT.objects.filter(requestId=popupEngagement)
                 ChatGPTserializer = ChatGPTSerializer(chatgpts, many=True)
 
-                return Response({'chatgpt': ChatGPTserializer.data, 'popupAdditional': Additionalserializer.data})
+                return Response({'chatgpt': ChatGPTserializer.data, 'popupAdditional': additionalSerializer.data})
             else:
                 return Response({'error': 'Popup engagement does not exist'}, status=404)
 
         except Client.DoesNotExist:
             return Response({'error': 'Client does not exist'}, status=404)
+
 
     def post(self, request, clientId, popupId, popupEngagementUniqueIdentifier):
         try:
@@ -127,14 +129,64 @@ class ChatGPTByClientView(APIView):
             popupEngagement = PopupEngagement.objects.filter(popupEngagementId=popup, popupEngagementUniqueIdentifier=popupEngagementUniqueIdentifier).first()
 
             if popupEngagement:
-                """
-                The rest of your code
-                """
+
+                general_info = GeneralInformationForChatGPT.objects.filter(chatGPTInformationKey=popup).first()
+                product_info = PopupProducts.objects.filter(productSpecificChatGPTInformationKey=popup).first()
+
+                # Construct the input prompt for the ChatGPT API
+                input_prompt = []
+
+                conversation_history = ChatGPT.objects.filter(requestId=popupEngagement).values_list('inputChatGPT', flat=True)
+
+                input_prompt.append(
+                    f"\n I created a chatbot on a popup that is embedded at my customers website where visitors can engage with that chatbot which is you. I will provide you the informations of my customers data below so that you can answer visitors questions or help them along.  Additionally i will provide you the chat history if there is any in my database storing all you and the visitors inputs. Some abbreviations I use in my database are as follows:PreviousInputOfCustomer is the previous chat history of the visitor of my customer, PreviousOutputOfChatGPT is your previous historical answer saved on my server (so please stay consistent in your answers), latestInputOfCustomer is the latest input of the websites visitor which needs to be answered/guided by you (according to all other historical text and information i gave you).Please act as a support and marketing chatbot.  Please give the answer directly without using ‘LatestOutputOfChatGPT' or 'outputChatGPT' or 'PreviousOutputOfChatGPT:' etc ... you are directly engaging with the visitor.Please write in a happy and helpful mood. Write an answer that is shorter than 100 characters.")
+                if general_info:
+                    input_prompt.append(f"Problem: {general_info.whatProblemIsYourCompanySolving}")
+                    input_prompt.append(f"Services: {general_info.whatServicesDoYouOffer}")
+                    input_prompt.append(f"Contact: {general_info.howCanCustomersReachYouOrYourTeam}")
+                    input_prompt.append(f"FAQs: {general_info.whatAreFAQs}")
+                    input_prompt.append(f"Other Info: {general_info.anyOtherInformation}")
+                    input_prompt.append(f"Discount: {general_info.howMuchDiscountCanYouDoMaximum}")
+                    input_prompt.append(f"Popup Title and Content: {general_info.doYouWantYourOwnPopupTitleAndContent}")
+                    input_prompt.append(f"Most Sold Product: {general_info.whatIsYourMostSoldProduct}")
+
+                if product_info:
+                    input_prompt.append(f"Product Price: {product_info.productPrice}")
+                    input_prompt.append(f"Product Currency: {product_info.productCurrency}")
+                    input_prompt.append(f"Discountable: {product_info.productIsDiscountable}")
+                    input_prompt.append(f"Product Specs: {product_info.productSpecs}")
+
+                # Append the existing inputChatGPT to the conversation history
+                # Retrieve the existing conversation history for the popupEngagementUniqueIdentifier
+
+                previous_outputs = ChatGPT.objects.filter(requestId=popupEngagement).values_list('outputChatGPT', flat=True)
+
+                # Concatenate the previous inputs and outputs with the conversation history
+                for i in range(len(conversation_history)):
+                    input_prompt.append(f"PreviousInputOfCustomer: {conversation_history[i]}")
+                    input_prompt.append(f"PreviousOutputOfChatGPT: {previous_outputs[i]}")
+                input_prompt.append(f"latestInputOfCustomer: {request.data['inputChatGPT']}")
+
+                conversation_prompt = '\n'.join(input_prompt)
+                print('conversation_history', conversation_history)
+                # Call the ChatGPT API to generate the response
+
+                response = openai.ChatCompletion.create(
+                    model='gpt-3.5-turbo',
+                    messages = [{'role': 'user', 'content': conversation_prompt}],
+                )
+
+                # Extract the generated output from the API response
+                output_gpt = response.choices[0]["message"]["content"]
+
+                print(output_gpt)
+
+                # Continue with the rest of your code
                 serializer = ChatGPTSerializer(data={
                     'requestId': popupEngagement.id,
                     'inputChatGPT': request.data['inputChatGPT'],
                     'chatWebsiteURL': request.data['chatWebsiteURL'],
-                    'outputChatGPT': 'Well, in this case, we can make a discount for you, here is your discount code: HELLOWorld1202. You can go ahead and buy the article buy closing this popup!',
+                    'outputChatGPT': str(output_gpt),
                 })
 
                 if serializer.is_valid():
@@ -142,11 +194,13 @@ class ChatGPTByClientView(APIView):
                     chatGPT_object = serializer.instance  # Get the saved chatGPT object
                     chatgpts = [chatGPT_object]  # Create a list with the new chatGPT object
                     ChatGPTserializer = ChatGPTSerializer(chatgpts, many=True)  # Serialize the list
+
+                    print('ChatGPTserializer.data',ChatGPTserializer.data)
                     return Response({'chatgpt': ChatGPTserializer.data})
                 else:
+                    print('hellooo')
                     return Response(serializer.errors, status=400)
-            else:
-                return Response({'error': 'Popup engagement does not exist'}, status=404)
+
 
         except Client.DoesNotExist:
             return Response({'error': 'Client does not exist'}, status=404)

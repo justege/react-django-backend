@@ -58,10 +58,7 @@ MIDDLEWARE = [
 
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    'http://*',
-    'https://*',
-]
+CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'softapyBackend.urls'
 
