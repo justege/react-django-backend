@@ -13,3 +13,4 @@ urlpatterns = [
 	path('popup/chatgpt/<int:clientId>/<int:popupId>/<str:popupEngagementUniqueIdentifier>', views.ChatGPTByClientView.as_view(), name='chatgpt-by-client'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

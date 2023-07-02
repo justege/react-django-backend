@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-h5)n4ft(4#y=+=m3#-3!9@nxvf#)(w@wp&a2qv0#73kfn9(pw+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1','egemen1995.pythonanywhere.com', 'www.convertpopup.com', 'convertpopup.com']
 
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
 ]
 
+SECURE_SSL_REDIRECT = True
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -59,6 +60,12 @@ MIDDLEWARE = [
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+    'https://www.convertpopup.com',
+]
 
 ROOT_URLCONF = 'softapyBackend.urls'
 

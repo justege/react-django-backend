@@ -137,7 +137,6 @@ class ChatGPT(models.Model):
 	requestId = models.ForeignKey(PopupEngagement, related_name='chatgpt', on_delete=models.CASCADE)
 	inputChatGPT = models.TextField(max_length=2000)
 	outputChatGPT = models.TextField(max_length=5000, null=True)
-	chatWebsiteURL = models.CharField(max_length=300, null=True)
 
 
 class PopupChatSuggestion(models.Model):

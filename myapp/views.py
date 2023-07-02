@@ -20,14 +20,10 @@ openai.api_key = ''
 
 def PopupFilesView(request, clientId):
     # Retrieve the latest PopupFiles instance uploaded by the current user
-    popup_file = PopupFiles.objects.filter(uploaded_by=clientId).order_by('-uploaded_at').first()
+    popup_file = get_object_or_404(PopupFiles, uploaded_by=clientId)
 
     if popup_file:
-        file_content = popup_file.file.read()  # Read the content of the file
-
-        # Rest of your code...
-
-        return HttpResponse(file_content)
+        return popup_file.file
     else:
         return HttpResponse("No file uploaded")
 
