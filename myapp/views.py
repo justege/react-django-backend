@@ -15,7 +15,7 @@ import random
 import string
 from django.core.exceptions import ObjectDoesNotExist
 # Initialize the OpenAI API client
-openai.api_key = ''
+openai.api_key = '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'
 
 
 def PopupFilesView(request, clientId):
@@ -126,6 +126,7 @@ class ChatGPTByClientView(APIView):
 
             if popupEngagement:
 
+
                 general_info = GeneralInformationForChatGPT.objects.filter(chatGPTInformationKey=popup).first()
                 product_info = PopupProducts.objects.filter(productSpecificChatGPTInformationKey=popup).first()
 
@@ -136,6 +137,9 @@ class ChatGPTByClientView(APIView):
 
                 input_prompt.append(
                     f"\n I created a chatbot on a popup that is embedded at my customers website where visitors can engage with that chatbot which is you. I will provide you the informations of my customers data below so that you can answer visitors questions or help them along.  Additionally i will provide you the chat history if there is any in my database storing all you and the visitors inputs. Some abbreviations I use in my database are as follows:PreviousInputOfCustomer is the previous chat history of the visitor of my customer, PreviousOutputOfChatGPT is your previous historical answer saved on my server (so please stay consistent in your answers), latestInputOfCustomer is the latest input of the websites visitor which needs to be answered/guided by you (according to all other historical text and information i gave you).Please act as a support and marketing chatbot.  Please give the answer directly without using ‘LatestOutputOfChatGPT' or 'outputChatGPT' or 'PreviousOutputOfChatGPT:' etc ... you are directly engaging with the visitor.Please write in a happy and helpful mood. Write an answer that is shorter than 100 characters.")
+
+                input_prompt.append(f"Visitor is currently at website url: {popupEngagement.conversationStartedAtWebsiteLink}")
+
                 if general_info:
                     input_prompt.append(f"Problem: {general_info.whatProblemIsYourCompanySolving}")
                     input_prompt.append(f"Services: {general_info.whatServicesDoYouOffer}")
@@ -181,7 +185,6 @@ class ChatGPTByClientView(APIView):
                 serializer = ChatGPTSerializer(data={
                     'requestId': popupEngagement.id,
                     'inputChatGPT': request.data['inputChatGPT'],
-                    'chatWebsiteURL': request.data['chatWebsiteURL'],
                     'outputChatGPT': str(output_gpt),
                 })
 
@@ -190,11 +193,8 @@ class ChatGPTByClientView(APIView):
                     chatGPT_object = serializer.instance  # Get the saved chatGPT object
                     chatgpts = [chatGPT_object]  # Create a list with the new chatGPT object
                     ChatGPTserializer = ChatGPTSerializer(chatgpts, many=True)  # Serialize the list
-
-                    print('ChatGPTserializer.data',ChatGPTserializer.data)
                     return Response({'chatgpt': ChatGPTserializer.data})
                 else:
-                    print('hellooo')
                     return Response(serializer.errors, status=400)
 
 
