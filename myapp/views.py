@@ -15,7 +15,7 @@ import random
 import string
 from django.core.exceptions import ObjectDoesNotExist
 # Initialize the OpenAI API client
-openai.api_key = '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'
+openai.api_key = ''
 
 
 def PopupFilesView(request, clientId):
