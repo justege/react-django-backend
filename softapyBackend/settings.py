@@ -7,7 +7,7 @@ SECRET_KEY = 'django-insecure-h5)n4ft(4#y=+=m3#-3!9@nxvf#)(w@wp&a2qv0#73kfn9(pw+
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'http://127.0.0.1', 'https://127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1', 'http://127.0.0.1', 'https://127.0.0.1', 'www.convertpopup.com', 'https://www.convertpopup.com', 'http://www.convertpopup.com', 'https://convertpopup.com', 'http://convertpopup.com']
 
 MEDIA_URL = '/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
