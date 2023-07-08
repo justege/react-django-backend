@@ -200,3 +200,41 @@ class ChatGPTByClientView(APIView):
 
         except Client.DoesNotExist:
             return Response({'error': 'Client does not exist'}, status=404)
+
+
+def questionnaire(request):
+    groups = PopupEngagementForwardToGroup.objects.all()
+    current_group = None
+    current_item = None
+
+    if request.method == 'POST':
+        # Process the form submission
+        for group in groups:
+            item_id = request.POST.get(f'item_{group.id}')
+            response_text = request.POST.get(f'response_{group.id}')
+
+            if item_id and response_text:
+                item = PopupEngagementForwardToItem.objects.get(id=item_id)
+                response = PopupEngagementForwardToResponse.objects.create(
+                    group=group,
+                    item=item,
+                    response_text=response_text
+                )
+                current_group = group
+                current_item = item
+                break  # Stop processing after the first response
+
+    else:
+        # Fetch the next question based on the previous response
+        previous_response = PopupEngagementForwardToResponse.objects.last()
+        if previous_response:
+            current_group = previous_response.item.group
+            next_answer = PopupEngagementForwardToItem.objects.filter(group=current_group,
+                                                                      group__popupEngagementForwardToItem_previous=previous_response.item).first()
+            if next_answer:
+                current_item = next_answer
+            else:
+                current_group = None  # No more questions
+
+    context = {'groups': groups, 'current_group': current_group, 'current_item': current_item}
+    return render(request, 'questionnaire.html', context)

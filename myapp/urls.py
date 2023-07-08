@@ -7,6 +7,7 @@ urlpatterns = [
 	path('login/', views.login_user, name='login'),
 	path('logout/', views.logout_user, name='logout'),
 	path('register/', views.register_user, name='register'),
+	path('questionnaire/', views.questionnaire, name='questionnaire'),
 	path('files/<int:clientId>', views.PopupFilesView, name='PopupFilesView'),
 	path('popup/createNewPopupEngagement/<int:popupId>/<int:clientId>', views.newPopupEngagementCreation, name='newPopupEngagementCreation'),
 	path('popup/<int:popupId>/<int:clientId>', views.popup, name='popup'),

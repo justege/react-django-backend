@@ -98,3 +98,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Disable CORS (allow all origins)
 CORS_ALLOW_ALL_ORIGINS = True
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Assuming your front-end is running on this address
+    "http://127.0.0.1:3000",
+    "http://www.convertpopup.com",
+    "https://www.convertpopup.com",
+    "http://convertpopup.com",
+    "https://convertpopup.com",
+]
+

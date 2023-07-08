@@ -20,6 +20,8 @@ class PromoCode(models.Model):
 class Popup(models.Model):
 	popupId = models.ForeignKey(Client, related_name='popup', on_delete=models.CASCADE)
 
+	popupType = models.IntegerField(null=True)
+
 	popupHasLogo = models.BooleanField(default=False,null=True)
 	popupLogo = models.ImageField(null=True)
 	popupGoal = models.SmallIntegerField(null=True)
@@ -172,4 +174,22 @@ class PopupFiles(models.Model):
 
 	def __str__(self):
 		return self.file.name
+
+
+
+class PopupEngagementForwardToGroup(models.Model):
+	groupKey = models.ForeignKey(Popup, related_name='popupEngagementForwardToGroup', on_delete=models.CASCADE)
+	forwardToGroupIdentifierText = models.TextField(max_length=100, null=True)
+	def __str__(self):
+		return self.forwardToGroupIdentifierText
+
+class PopupEngagementForwardToItem(models.Model):
+	itemKey = models.ForeignKey(PopupEngagementForwardToGroup, related_name='popupEngagementForwardToItem', on_delete=models.CASCADE)
+	group = models.ForeignKey(PopupEngagementForwardToGroup, related_name='popupEngagementForwardToItem_previous', on_delete=models.SET_NULL, null=True, blank=True)
+	forwardToItemIdentifierText = models.TextField(max_length=300, null=True)
+	forwardToItemIdentifierImage = models.ImageField(null=True)
+
+class PopupEngagementForwardToResponse(models.Model):
+	group = models.ForeignKey(PopupEngagementForwardToGroup, on_delete=models.CASCADE)
+	item = models.ForeignKey(PopupEngagementForwardToItem, on_delete=models.CASCADE)
 
